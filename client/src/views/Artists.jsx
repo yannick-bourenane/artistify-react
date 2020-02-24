@@ -21,11 +21,16 @@ export default class Artists extends Component {
   render() {
     return (
       <React.Fragment>
+        {this.state.artists && 
+        this.state.artists.map(((artist, index) => (
+          <CardArtist name={artist.name} artistId={artist._id} style={artist.style} key={index} />
+        )))
+        }
         <h1 className="title diy">D.I.Y (Artists)</h1>
         <p>
           Fetch all artists from the database.
           <br />
-          Display a card for each album.
+          Display a card for each artist.
           <br />
           Provide a router {`<Link>`} to="artists/artists.id",
           <br />
