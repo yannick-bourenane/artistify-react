@@ -6,7 +6,7 @@ const express = require("express");
 const router = new express.Router();
 const userModel = require("./../models/User");
 const passport = require("passport");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const uploader = require("./../config/cloudinary");
 
 const minPasswordLength = 4;
