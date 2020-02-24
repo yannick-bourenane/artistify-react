@@ -57,11 +57,8 @@ router.get("/albums/:id", (req, res, next) => {
 });
 
 router.post("/albums", uploader.single("cover"), (req, res, next) => {
-  console.log("---------------", req.body);
   const album = req.body;
-  console.log("---------------", req.file);
   if (req.file) album.cover = req.file.secure_url;
-  console.log("---------------", album);
 
   albumModel
     .create(album)

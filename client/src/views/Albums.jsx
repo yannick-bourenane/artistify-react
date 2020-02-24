@@ -21,7 +21,14 @@ export default function Albums() {
 
   return (
     <React.Fragment>
-      <h1 className="title diy">D.I.Y</h1>
+      <h1 className="title diy">Albums</h1>
+      <div className="cards">
+        {albums ? (
+          albums.map((album, i) => <CardAlbum data={album} key={i} />)
+        ) : (
+          <p>No albums yet</p>
+        )}
+      </div>
       <p>
         Fetch all Albums from the database.
         <br />
@@ -37,8 +44,8 @@ export default function Albums() {
       <p>
         Import a custom {`<IconFavorite />`} on each album card.
         <br />
-        When clicked, send an axios.patch request to add the album to the
-        user's favorites.
+        When clicked, send an axios.patch request to add the album to the user's
+        favorites.
       </p>
 
       <LabPreview name="albums" />

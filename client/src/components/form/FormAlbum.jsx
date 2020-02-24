@@ -19,12 +19,14 @@ class FormAlbum extends Component {
   componentDidMount() {
     apiHandler
       .get("/labels")
-      .then(res => {
-        this.setState({ labels: res.data.labels });
+      .then(resLabels => {
         apiHandler
           .get("/artists")
           .then(resArtists => {
-            this.setState({ artists: resArtists.data.artists });
+            this.setState({
+              labels: resLabels.data.labels,
+              artists: resArtists.data.artists
+            });
           })
           .catch(err => {
             console.error(err);
