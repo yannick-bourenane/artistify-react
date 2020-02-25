@@ -18,31 +18,73 @@ class FormArtist extends Component {
   }
 
   componentDidMount() {
-    APIHandler
-    .get('/styles')
-    .then(res => {
-      this.setState({styles: res.data.styles});
-      console.log(this.state.styles)
-    })
-    .catch(err => console.error(err))
+    if(this.props.mode === "create") {
+      APIHandler
+      .get('/styles')
+      .then(res => {
+        this.setState({styles: res.data.styles});
+      })
+      .catch(err => console.error(err))
+    }
+
+
+    if(this.props.mode === "edit") {
+      APIHandler
+      .get(`/artists/${this.props._id}`)
+      .then(res => {
+        APIHandler
+        .get('/styles')
+        .then(res => {
+          this.setState({styles: res.data.styles});
+        })
+        .catch(err => console.error(err))
+        this.setState({
+          // name: res.data.name,
+          // isBand: res.data.isBand,
+          // description: res.data.description,
+          // style: res.data.style
+          ...res.data
+        })
+      })
+      .catch(err => console.error(err))
+    }
+    
   }
 
   handleChange = e => {
-    this.setState({ [e.target.name]: e.target.value })
+    let val = e.target.value
+    if (e.target.name === "isBand") {
+      val = !!e.target.value
+    }
+    this.setState({ [e.target.name]: val })
   };
 
   handleSubmit = async e => {
     e.preventDefault();
-    
-    APIHandler
-    .post("/artists", {
-      name: this.state.name,
-      description: this.state.description,
-      style: this.state.style,
-      isBand: this.state.isBand
-    })
-    .then(res => console.log(res))
-    .catch(err => console.error(err))
+
+    if(this.props.mode === "create") {
+      APIHandler
+      .post("/artists", {
+        name: this.state.name,
+        description: this.state.description,
+        style: this.state.style,
+        isBand: this.state.isBand
+      })
+      .then(res => console.log(res))
+      .catch(err => console.error(err))
+    }
+
+    if(this.props.mode === "edit") {
+      APIHandler
+      .patch(`/artists/${this.props._id}`, {
+        name: this.state.name,
+        description: this.state.description,
+        style: this.state.style,
+        isBand: this.state.isBand
+      })
+      .then(res => console.log(res))
+      .catch(err => console.error(err))
+    }
     
   }
   
@@ -56,26 +98,31 @@ class FormArtist extends Component {
         onChange={this.handleChange}
         >
           <label htmlFor="name" className="label">name</label>
-          <input type="text" name="name" id="name" className="input" />
+          <input
+          defaultValue={this.state.name && this.state.name}
+          type="text" name="name" id="name" className="input" />
 
           <label htmlFor="description" className="label">description</label>
-          <textarea name="description" id="description" className="input" />
+          <textarea
+          defaultValue={this.state.description && this.state.description}
+          name="description" id="description" className="input" />
 
           <label htmlFor="style" className="label">style</label>
-          <select name="style" id="style" className="input">
-            <option selected disabled>Choose a style</option>
-            {this.state.styles.map((style, index) => (
-              <option key={index} value={style._id}>{style.name}</option>
-            ))}
+          <select defaultValue="Choose a style" name="style" id="style" className="input">
+              <option disabled>Choose a style</option>
+              {this.state.styles.map((style, index) => (
+                <option selected={this.state.style === style._id && "selected"} key={index} value={style._id}>{style.name}</option>
+              ))}
+
           </select>
 
           <label className="label">is band?</label>
           <div>
             <label htmlFor="yes" className="label">yes</label>
-            <input value="yes" name="isBand" id="yes" type="radio" />
+            <input checked={this.state.isBand} value="yes" name="isBand" id="yes" type="radio" />
 
             <label htmlFor="no" className="label">no</label>
-            <input value="no" name="isBand" id="no" type="radio" />
+            <input checked={!this.state.isBand} value="" name="isBand" id="no" type="radio" />
           </div>
 
 

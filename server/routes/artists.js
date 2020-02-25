@@ -47,7 +47,12 @@ router.get("/artists", async (req, res, next) => {
 
 
 router.get("/artists/:id", (req, res, next) => {
-  res.status(200).json({ msg: "@todo" })
+  artistModel
+  .findById(req.params.id)
+  .then(dbres => {
+    res.status(200).json(dbres)
+  })
+  .catch(next)
 });
 
 router.get("/filtered-artists", (req, res, next) => {
@@ -67,7 +72,16 @@ router.post("/artists", (req, res) => {
 });
 
 router.patch("/artists/:id", async (req, res, next) => {
-  res.status(200).json({ msg: "@todo" })
+  console.log(req.body)
+  const {name, description, style, isBand} = req.body
+  const updatedArtist = {name, description, style, isBand}
+  artistModel
+  .findByIdAndUpdate(req.params.id, updatedArtist, { new: true })
+  .then(dbRes => {
+    res.status(200).json(dbRes)
+  })
+  .catch(next)
+
 });
 
 router.delete("/artists/:id", (req, res, next) => {
