@@ -11,33 +11,56 @@ import "./../../styles/form.css";
 import "./../../styles/icon-avatar.css";
 
 class FormAlbum extends Component {
-  state = {
-    imgPreview:
-      "https://s1.qwant.com/thumbr/0x380/3/e/38241f096fcbc253212fd57ad2acbab0a7fdf0eab51d8e9790ab3f01027e75/default.jpeg?u=https%3A%2F%2Flargeasse.fr%2Fwp-content%2Fuploads%2F2015%2F05%2Fdefault.jpeg&q=0&b=1&p=0&a=1"
-  };
+  state = {};
 
   componentDidMount() {
-    apiHandler
-      .get("/labels")
-      .then(resLabels => {
-        apiHandler
-          .get("/artists")
-          .then(resArtists => {
-            this.setState({
-              labels: resLabels.data.labels,
-              artists: resArtists.data.artists
-            });
+    this.props.mode === "edit"
+      ? apiHandler
+          .get("/albums/" + this.props._id)
+          .then(resAlbums => {
+            apiHandler
+              .get("/labels")
+              .then(resLabels => {
+                apiHandler
+                  .get("/artists")
+                  .then(resArtists => {
+                    this.setState({
+                      ...resAlbums.data,
+                      labels: resLabels.data.labels,
+                      artists: resArtists.data.artists
+                    });
+                    console.log(this.state);
+                  })
+                  .catch(err => {
+                    console.error(err);
+                  });
+              })
+              .catch(err => {
+                console.error(err);
+              });
+          })
+          .catch(err => console.log(err))
+      : apiHandler
+          .get("/labels")
+          .then(resLabels => {
+            apiHandler
+              .get("/artists")
+              .then(resArtists => {
+                this.setState({
+                  labels: resLabels.data.labels,
+                  artists: resArtists.data.artists
+                });
+              })
+              .catch(err => {
+                console.error(err);
+              });
           })
           .catch(err => {
             console.error(err);
           });
-      })
-      .catch(err => {
-        console.error(err);
-      });
   }
 
-  handleAvatar = e => {
+  handleCover = e => {
     this.setState(
       {
         cover: e.target.files[0]
@@ -56,7 +79,9 @@ class FormAlbum extends Component {
   };
   handleForm = e => {
     if (e.target.name === "cover") return;
-    this.setState({ [e.target.name]: e.target.value });
+    this.setState({ [e.target.name]: e.target.value }, () =>
+      console.log(this.state)
+    );
   };
   handleSubmit = async evt => {
     evt.preventDefault();
@@ -68,8 +93,13 @@ class FormAlbum extends Component {
       fd.append("cover", this.state.cover);
       fd.append("description", this.state.description);
       fd.append("label", this.state.label);
-      const apiRes = await apiHandler.post("/albums", fd);
-      console.log(apiRes);
+      if (this.props.mode === "edit") {
+        const apiRes = await apiHandler.patch("/albums/" + this.props._id, fd);
+        console.log(apiRes);
+      } else {
+        const apiRes = await apiHandler.post("/albums", fd);
+        console.log(apiRes);
+      }
     } catch (apiErr) {
       console.log(apiErr);
     }
@@ -77,7 +107,11 @@ class FormAlbum extends Component {
   render() {
     return (
       <>
-        <h1 className="title diy">Create an Album</h1>
+        {this.props.mode === "edit" ? (
+          <h1 className="title diy">Edit an Album</h1>
+        ) : (
+          <h1 className="title diy">Create an Album</h1>
+        )}
         <form
           onChange={this.handleForm}
           onSubmit={this.handleSubmit}
@@ -86,32 +120,51 @@ class FormAlbum extends Component {
           <label className="label" htmlFor="title">
             title
           </label>
-          <input type="text" name="title" id="title" className="input" />
+          <input
+            type="text"
+            name="title"
+            id="title"
+            className="input"
+            defaultValue={this.state.title && this.state.title}
+          />
           <label className="label" htmlFor="artist">
             Artist
           </label>
-          <select className="input" name="artist" id="artist">
-            <option defaultValue="" selected disabled>
-              Pick an artist
-            </option>
+          <select
+            className="input"
+            name="artist"
+            id="artist"
+            defaultValue="Pick an artist"
+          >
+            <option disabled>Pick an artist</option>
             {this.state.artists &&
               this.state.artists.map((artist, i) => (
-                <Artist artist={artist} key={i} />
+                <Artist
+                  isSelected={this.state.artist === artist._id ? true : false}
+                  artist={artist}
+                  key={i}
+                />
               ))}
           </select>
           <label className="label" htmlFor="label">
             label
           </label>
-          <select className="input" name="label" id="label">
-            <option defaultValue="" selected disabled>
-              Pick a label
-            </option>
+          <select
+            className="input"
+            name="label"
+            id="label"
+            defaultValue="Pick a label"
+          >
+            <option disabled>Pick a label</option>
             {this.state.labels &&
               this.state.labels.map((label, i) => (
-                <Label label={label} key={i} />
+                <Label
+                  isSelected={this.state.label === label._id ? true : false}
+                  label={label}
+                  key={i}
+                />
               ))}
           </select>
-
           <label className="label" htmlFor="releaseDate">
             Release date
           </label>
@@ -120,15 +173,22 @@ class FormAlbum extends Component {
             type="date"
             name="releaseDate"
             id="releaseDate"
+            defaultValue={
+              this.state.releaseDate && this.state.releaseDate.substr(0, 10)
+            }
           />
           <label className="label" htmlFor="cover">
             Cover
           </label>
           <label
             style={
-              this.state.imgPreview && {
-                backgroundImage: `url(${this.state.imgPreview})`
-              }
+              this.state.imgPreview
+                ? this.state.imgPreview && {
+                    backgroundImage: `url(${this.state.imgPreview})`
+                  }
+                : this.state.cover && {
+                    backgroundImage: `url(${this.state.cover})`
+                  }
             }
             className="label img-preview"
             htmlFor="cover"
@@ -138,7 +198,8 @@ class FormAlbum extends Component {
             type="file"
             name="cover"
             id="cover"
-            onChange={this.handleAvatar}
+            onChange={this.handleCover}
+            defaultValue={this.state.cover && this.state.cover}
           />
           <label className="label" htmlFor="description">
             Description
@@ -148,8 +209,11 @@ class FormAlbum extends Component {
             type="text"
             name="description"
             id="description"
+            defaultValue={this.state.description && this.state.description}
           />
-          <button className="btn">Create</button>
+          <button className="btn">
+            {this.props.mode === "edit" ? "Edit" : "Create"}
+          </button>
         </form>
         <LabPreview name="albumForm" isSmall />
       </>
