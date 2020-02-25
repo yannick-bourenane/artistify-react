@@ -1,8 +1,8 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 // custom tools
 import apiHandler from "../api/APIHandler";
 // import CardAlbum from "../components/card/CardAlbum";
-// import Comments from "../components/comment/Comments";
+import Comments from "../components/comment/Comments";
 // import List from "../components/List";
 // import Stars from "../components/star/Stars";
 import UserContext from "./../auth/UserContext";
@@ -12,51 +12,50 @@ import "./../styles/artist.css";
 import "./../styles/comment.css";
 import "./../styles/star.css";
 
-export default function Artists({ match }) {
+export default function Artist({ match }) {
+
+  const [artistInfo, setArtistInfo] = useState();
+  const [artistAlbums, setArtistAlbums] = useState();
+
+  useEffect(() => {
+    apiHandler
+      .get(match.url)
+      .then(infos => {
+        console.log(infos)
+        setArtistInfo(infos.data.artistInfo)
+        setArtistAlbums(infos.data.artistAlbums)
+        
+      })
+      .catch(err => console.log(err))
+
+  }, [match.url])
+  
   const userContext = useContext(UserContext);
   const { currentUser } = userContext;
+  
+  return artistInfo && artistAlbums ? (
+    <div>
+      <div className="page artist">
+        <h1 className="title">{artistInfo.name}</h1>
+        <p className="description">{artistInfo.description}</p>
+        
+        <div className="discography">
+          <h1 className="title">Discography</h1>
+          <div className="albums">
+            {artistAlbums.length === 0 ? "Sorry, no data yet..." :
+            artistAlbums.map((album, i) => (
+              <div key={i}>
+                <img src={album.cover} alt="cover" />
+                <p className="title">{album.title}</p>
+              </div>
+            ))
+            }
+          </div> 
+        </div>
 
-  return (
-    <>
-      <h1 className="title diy">D.I.Y (Artist)</h1>
-      <p>
-        Use the image below to code the {`<Artist />`} component.
-        <br />
-        This component import child components: {`<Stars />`}, {`<Comments />`}{" "}
-        and {`<Discography />`}
-      </p>
+        <Comments />
+      </div>
 
-      <h1 className="title diy">D.I.Y (Stars)</h1>
-      <p>
-        The Stars component allow the end-users to rate an artist/album.
-        <br />
-        The black stars represent the average rate for a given resource.
-        <br />
-        The yellow stars represent the logged in user rate.
-        <br />
-        Bonus: make it modular to rate labels/styles as well.
-      </p>
-
-      <hr />
-
-      <h1 className="title diy">D.I.Y (Discography)</h1>
-      <p>
-        Code a Discography component displaying all the albums related to the
-        current artist if any, <br />else display the appropriate message.
-        <br />
-      </p>
-      <hr />
-
-      <h1 className="title diy">D.I.Y (Comments)</h1>
-      <p>
-        Import a custom {`<Comments />`} allowing the end-users to post comments
-        related to the current artist.
-        <br />
-      </p>
-
-      <LabPreview name="artist"/>
-
-     
-    </>
-  );
+    </div>
+  ) : <p>...loading</p>
 }

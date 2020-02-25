@@ -12,7 +12,15 @@ export default class Comments extends Component {
 
     return (
       <div className="comments">
-        comments
+        <p className="title">express y@self</p>
+        <form className="form">
+          <input placeholder="leave a comment here..." className="input"></input>
+          <button className="btn">send!</button>
+        </form>
+
+        <div className="comment">
+
+        </div>
       </div>
     );
   }

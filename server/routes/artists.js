@@ -7,6 +7,8 @@ const router = new express.Router();
 const artistModel = require("../models/Artist");
 const albumModel = require("../models/Album");
 
+var ObjectId = require('mongoose').Types.ObjectId; 
+
 const getAverageRate = async idArtist => {
   // use agregate features @ mongo db to code this feature
   // https://docs.mongodb.com/manual/aggregation/
@@ -49,8 +51,13 @@ router.get("/artists", async (req, res, next) => {
 router.get("/artists/:id", (req, res, next) => {
   artistModel
   .findById(req.params.id)
-  .then(dbres => {
-    res.status(200).json(dbres)
+  .then(artistInfo => {
+    albumModel
+    .find({"artist": ObjectId(req.params.id)})
+    .then(artistAlbums => {
+      res.status(200).json({artistInfo, artistAlbums})
+    })
+    .catch(next)
   })
   .catch(next)
 });
@@ -60,7 +67,7 @@ router.get("/filtered-artists", (req, res, next) => {
 });
 
 router.post("/artists", (req, res) => {
-  console.log(req.body)
+ 
   artistModel
   .create(req.body)
   .then(createdArtist => {
@@ -72,7 +79,7 @@ router.post("/artists", (req, res) => {
 });
 
 router.patch("/artists/:id", async (req, res, next) => {
-  console.log(req.body)
+ 
   const {name, description, style, isBand} = req.body
   const updatedArtist = {name, description, style, isBand}
   artistModel
@@ -85,7 +92,12 @@ router.patch("/artists/:id", async (req, res, next) => {
 });
 
 router.delete("/artists/:id", (req, res, next) => {
-  res.status(200).json({ msg: "@todo" })
+  artistModel
+  .findByIdAndDelete(req.params.id)
+  .then(dbRes => {
+    res.status(200).json(dbRes)
+  })
+  .catch(next)
 });
 
 module.exports = router;
