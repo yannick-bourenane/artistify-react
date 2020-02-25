@@ -53,7 +53,15 @@ router.get("/albums", (req, res, next) => {
 });
 
 router.get("/albums/:id", (req, res, next) => {
-  res.status(200).json({ msg: "@todo" });
+  albumModel
+    .findById(req.params.id)
+    .then(album => {
+      const { title, releaseDate, artist, description, label, cover } = album;
+      res
+        .status(200)
+        .json({ title, releaseDate, artist, description, label, cover });
+    })
+    .catch(next);
 });
 
 router.post("/albums", uploader.single("cover"), (req, res, next) => {
@@ -73,7 +81,19 @@ router.post("/albums", uploader.single("cover"), (req, res, next) => {
 });
 
 router.patch("/albums/:id", uploader.single("cover"), (req, res, next) => {
-  res.status(200).json({ msg: "@todo" });
+  const album = req.body;
+  if (req.file) album.cover = req.file.secure_url;
+
+  albumModel
+    .findByIdAndUpdate(req.params.id, album, { new: true })
+    .then(editedAlbum => {
+      res.status(200).json({ msg: "Album successfully created" });
+      console.log(editedAlbum);
+    })
+    .catch(dbErr => {
+      res.status(500).json({ msg: "An error occured" });
+      next(dbErr);
+    });
 });
 
 router.delete("/albums/:id", (req, res, next) => {
