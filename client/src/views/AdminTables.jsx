@@ -95,10 +95,7 @@ export default class AdminTables extends Component {
                 <tr key={i}>
                   <RowTds key={i} data={r} />
                   {/* TODO CODE ONE MODULE FOR ACTION TDS */}
-                  <th
-                    data-ressource-id={r._id}
-                    className="is-clickable"
-                  >
+                  <th data-ressource-id={r._id} className="is-clickable">
                     <Link
                       className="link"
                       to={`/admin/${_endpoint}/edit/${r._id}`}
