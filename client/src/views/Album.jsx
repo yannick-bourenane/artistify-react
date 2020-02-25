@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 // custom tools
-// import apiHandler from "../api/APIHandler";
+import apiHandler from "../api/APIHandler";
 import UserContext from "../auth/UserContext";
 // import Comments from "../components/comment/Comments";
 // import FormatDate from "../components/FormatDate";
@@ -12,19 +12,29 @@ import "../styles/comment.css";
 import "../styles/star.css";
 
 export default function Album({ match }) {
-  const userContext = useContext(UserContext);
-  const { currentUser } = userContext;
+  /*   const userContext = useContext(UserContext);
+  const { currentUser } = userContext; */
 
-  return (
+  const [album, setAlbum] = useState({});
+
+  useEffect(() => {
+    apiHandler.get(match.url).then(apiRes => {
+      setAlbum(apiRes.data);
+    });
+  }, []);
+
+  return album.artist ? (
     <>
-      <h1 className="title diy">D.I.Y (Album)</h1>
-      <p>
-        Use the image below to code the {`<Album />`} component.
-        <br />
-        This component import child components: {`<Stars />`} and{" "}
-        {`<Comments />`}{" "}
-      </p>
-
+      <div className="page album">
+        <h1 className="title">{album.title}</h1>
+        <img className="cover" src={album.cover} alt={album.title} />
+        <p className="publishing">
+          Album by {album.artist.name && album.artist.name} published the{" "}
+          {new Date(album.releaseDate).toLocaleDateString()}{" "}
+          <b>by {album.label.name && album.label.name}</b>
+        </p>
+        <p className="description">{album.description}</p>
+      </div>
       <h1 className="title diy">D.I.Y (Stars)</h1>
       <p>
         The Stars component allow the end-users to rate an artist/album.
@@ -36,17 +46,16 @@ export default function Album({ match }) {
         <br />
         Bonus: make it modular to rate labels/styles as well.
       </p>
-
       <hr />
-
       <h1 className="title diy">D.I.Y (Comments)</h1>
       <p>
         Import a custom {`<Comments />`} allowing the end-users to post comments
         in database related to the current artist.
         <br />
       </p>
-
       <LabPreview name="album" />
     </>
+  ) : (
+    <p>No album yet</p>
   );
 }

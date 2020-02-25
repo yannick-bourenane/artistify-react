@@ -55,6 +55,8 @@ router.get("/albums", (req, res, next) => {
 router.get("/albums/:id", (req, res, next) => {
   albumModel
     .findById(req.params.id)
+    .populate("label")
+    .populate("artist")
     .then(album => {
       const { title, releaseDate, artist, description, label, cover } = album;
       res
@@ -97,7 +99,10 @@ router.patch("/albums/:id", uploader.single("cover"), (req, res, next) => {
 });
 
 router.delete("/albums/:id", (req, res, next) => {
-  res.status(200).json({ msg: "@todo" });
+  albumModel
+    .findByIdAndDelete(req.params.id)
+    .then(deletedAlbum => console.log(deletedAlbum))
+    .catch(next);
 });
 
 module.exports = router;
